@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FitTrack Pro — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#020c1b">
+    <style>
+        /* 🎨 PROFESSIONAL CSS ADJUSTMENTS 🎨 */
+        :root{
+          --bg-dark-1:#020c1b; --bg-dark-2:#0a192f; --accent:#00c6ff;
+          --muted:#a8b2d1; --text:#e6f1ff; --card:rgba(22,38,62,0.55);
+          --border:rgba(0,198,255,0.12); --glass:rgba(255,255,255,0.03);
+          --glass-2: rgba(255,255,255,0.02);
+          /* Added specific size variables for consistency and reduced density */
+          --font-base: 18px; 
+          --font-h1: 2.2rem;
+          --font-h2: 1.25rem; /* Reduced slightly */
+          --font-body: 1rem;
+          --font-small: 0.85rem;
+          --transition-speed: 0.18s;
+        }
+        *{box-sizing:border-box}
+        
+        /* Global Reset and Typography */
+        html,body{
+            font-size:var(--font-base); 
+            height:100%;
+            margin:0;
+            font-family:'Inter',sans-serif;
+            background:linear-gradient(135deg,var(--bg-dark-1),var(--bg-dark-2));
+            color:var(--text);
+        }
+        .app{
+            display:flex;
+            gap:36px;
+            padding:40px;
+            align-items:flex-start;
+            min-height:100vh;
+        }
+
+        /* --- SIDEBAR AND NAVIGATION --- */
+        .sidebar{
+            width:300px;
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:18px;
+            padding:24px;
+            backdrop-filter:blur(6px);
+            box-shadow:0 10px 30px rgba(0,0,0,0.4);
+            position: sticky;
+            top: 40px;
+        }
+        /* Adjusted size and gap for branding */
+        .brand{
+            font-size:var(--font-h1);
+            font-weight:900;
+            cursor:default;
+            user-select:none;
+            display:flex;
+            align-items:center;
+            gap:8px; 
+            margin-bottom: 6px;
+        }
+        .brand span{color:var(--accent)}
+        /* Adjusted clock alignment and size */
+        .clock{
+            color:var(--muted);
+            margin-top:0;
+            font-weight:500; 
+            font-size: var(--font-h2); 
+            line-height: 1;
+        }
+        .nav{margin-top:28px;display:flex;flex-direction:column;gap:8px} /* Reduced gap */
+        .nav button{
+            background:transparent;
+            border:0;
+            text-align:left;
+            padding:12px; /* Reduced padding slightly */
+            border-radius:10px;
+            color:var(--text);
+            font-weight:600;
+            cursor:pointer;
+            transition:all var(--transition-speed); 
+            font-size: var(--font-body);
+        }
+        /* Added transition effect on hover/active */
+        .nav button:hover{transform:translateX(8px);color:var(--accent)}
+        .nav button.active{
+            background:linear-gradient(90deg,rgba(0,198,255,0.08),transparent);
+            box-shadow:inset 0 0 20px rgba(0,0,0,0.2);
+            border:1px solid rgba(0,198,255,0.08);
+        }
+
+        /* --- MAIN CONTENT & TOPBAR --- */
+        .main{flex:1}
+        .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+        .title{font-size:1.4rem;font-weight:700;color:var(--muted)}
+        .controls{display:flex;gap:12px;align-items:center}
+        
+        /* Buttons (CTA) */
+        .btn{
+            background:var(--accent);
+            color:#020c1b;
+            padding:10px 16px; /* Optimized padding */
+            border-radius:10px; /* Optimized border radius */
+            border:1px solid var(--accent);
+            font-weight:700;
+            cursor:pointer;
+            transition:all var(--transition-speed); 
+            font-size: var(--font-body);
+        }
+        .btn.secondary{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.08)}
+        .btn:hover{transform:scale(1.03)}
+        .btn:active{transform:scale(0.98)} /* Click transition */
+
+        /* --- DASHBOARD CARDS & METERS --- */
+        .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        /* Card alignment adjustments (Flex column for vertical spacing control) */
+        .card{
+            min-height:220px; 
+            padding:24px; 
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:18px;
+            min-height:140px;
+            position:relative;
+            overflow:hidden;
+            display:flex; 
+            flex-direction:column; 
+            align-items: stretch;
+            transition: transform var(--transition-speed);
+        }
+        .card:hover{transform: translateY(-3px);} /* Card hover effect */
+        .card h3{margin:0;font-size:var(--font-h2);color:var(--muted);font-weight:600}
+        .card .value{font-size:2.0rem;font-weight:900;margin-top:8px}
+        /* Meter alignment: flex-grow fills space, items centered */
+        .meter{
+            flex-grow: 1; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            padding: 10px 0;
+        }
+
+        /* Circular Meter Styles */
+        .circle{
+            --p:60;
+            --size:140px;
+            width:var(--size);
+            height:var(--size);
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            background:conic-gradient(var(--accent) calc(var(--p) * 1%), rgba(255,255,255,0.08) 0);
+            box-shadow:0 4px 30px rgba(0,0,0,0.5);
+            transition: background var(--transition-speed); /* Transition fill */
+        }
+        .circle.small{--size:110px} 
+        .circle.small .inner{font-size:1.1rem;}
+        .circle .inner{
+            width:80%;
+            height:80%;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            background:var(--glass-2);
+            font-weight:800; 
+            font-size: 1.2rem;
+        }
+
+        /* --- ACTIVITY & MEAL AREAS --- */
+        .panel{display:flex;gap:24px;margin-top:24px} /* Adjusted spacing */
+        .panel .left{flex:1}
+        .panel .right{width:400px} /* Adjusted width */
+
+        .list{background:var(--card);border-radius:18px;padding:20px;min-height:260px;border:1px solid var(--border)}
+        .list .item{
+            display:flex;
+            justify-content:space-between;
+            padding:10px 12px;
+            border-radius:8px;
+            align-items:center;
+            margin-bottom:8px;
+            background:linear-gradient(180deg,rgba(255,255,255,0.015),transparent);
+            transition:all var(--transition-speed);
+        }
+        .list .item:hover{transform:translateX(4px); background:rgba(0,198,255,0.02);} /* Reduced hover shift */
+
+        .filters{display:flex;gap:8px;margin:16px 0}
+        .chip{
+            padding:8px 12px;
+            border-radius:999px;
+            background:transparent;
+            border:1px solid rgba(255,255,255,0.05);
+            cursor:pointer;
+            font-size: var(--font-small);
+            transition: all var(--transition-speed);
+        }
+        .chip:hover{background:rgba(255,255,255,0.05);}
+        .chip.active{background:var(--accent);color:#020c1b;border-color:var(--accent); font-weight: 700;}
+
+        /* Forms */
+        .form-row{display:flex;gap:8px} /* Reduced gap */
+        .form-row input, .form-row select{
+            flex:1;
+            padding:10px;
+            border-radius:10px;
+            border:1px solid var(--border);
+            background:transparent;
+            color:var(--text);
+            font-size: var(--font-body);
+            transition: border-color var(--transition-speed);
+        }
+        .form-row input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 10px rgba(0,198,255,0.2)}
+
+        /* Meal tiles */
+        .meals{display:grid;grid-template-columns:repeat(1,1fr);gap:12px} /* Reduced gap */
+        .meal{
+            padding:12px;
+            border-radius:10px;
+            background:linear-gradient(180deg,rgba(0,0,0,0.08),transparent);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            transition: all var(--transition-speed);
+        }
+        .meal:hover{background:rgba(0,0,0,0.12);}
+        .meal .meta{font-weight:700; font-size: var(--font-body);}
+        .meal small{display:block;color:var(--muted);font-weight:500; font-size: var(--font-small);}
+        .meal .btn{padding:6px 10px; font-size: 0.8rem;}
+
+        /* --- INSIGHTS BARS --- */
+        .bars{
+            display:flex;
+            gap:10px;
+            align-items:flex-end;
+            height:180px; /* Slightly increased height */
+            padding:16px;
+            transition: opacity 0.3s;
+        }
+        .bars .bar{
+            flex:1;
+            min-width: 25px;
+            background:linear-gradient(180deg,var(--accent),rgba(0,198,255,0.25));
+            border-radius:6px 6px 0 0; 
+            display:flex;
+            align-items:flex-end;
+            justify-content:center;
+            padding-bottom:6px;
+            color:#020c1b;
+            font-weight:900; 
+            font-size: var(--font-small);
+            transition: height 0.5s ease-out; /* Transition for bar growth */
+        }
+        .bars .bar:hover{background:linear-gradient(180deg,var(--text),var(--accent)); cursor: help;}
+
+        /* Modal overlay */
+        .overlay{position:fixed;inset:0;background:linear-gradient(0deg,rgba(2,12,27,0.8),rgba(2,12,27,0.8));display:none;align-items:center;justify-content:center;z-index:999}
+        .overlay .modal{
+            background:var(--card);
+            padding:24px;
+            border-radius:18px;
+            border:1px solid var(--border);
+            width:450px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-out;
+        }
+        .overlay.visible .modal { transform: translateY(0); } /* Added modal visibility transition */
+
+
+        /* Responsive */
+        @media(max-width:1200px){.grid{grid-template-columns:repeat(2,1fr)}.panel{flex-direction:column}.app{padding:24px}.sidebar{width:260px;}}
+        @media(max-width:800px){.grid{grid-template-columns:1fr}.panel .right{width:100%}}
+        @media(max-width:640px){.sidebar{display:none}}
+
+        /* small helpers */
+        .muted{color:var(--muted);font-weight:600}
+        .small{font-size:var(--font-small)}
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="brand">FitTrack<span>Pro</span></div>
+            <div class="clock" id="liveClock">--:--:--</div>
+
+            <div class="nav" role="navigation" aria-label="Dashboard navigation">
+                <button class="active" data-view="overview">Overview</button>
+                <button data-view="activities">Activity Log</button>
+                <button data-view="meals">Meal Planner</button>
+                <button data-view="insights">Insights</button>
+                <button data-view="settings">Settings</button>
+            </div>
+
+            <div style="margin-top:20px;display:flex;gap:8px">
+                <button class="btn" id="downloadSummary">Download Summary</button>
+                <button class="btn secondary" id="resetBtn">Reset</button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div class="title">FitTrack Pro — Personal Wellness Dashboard</div>
+                <div class="controls">
+                    <div class="muted small">Logged in as <strong>admin</strong></div>
+                </div>
+            </div>
+
+            <section id="overview" class="view">
+                <div class="grid">
+                    
+                    <div class="card">
+                        <h3>Steps Taken</h3>
+                        <div class="meter">
+                            <div class="circle" id="stepsCircle" style="--p:0">
+                                <div class="inner">
+                                    <div id="stepsValue">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="small muted" style="text-align:center;">Goal: <span id="stepsGoal">10000</span> steps</div>
+                        <div class='form-row' style="margin-top:10px">
+                            <input type="number" id="stepInput" placeholder="Add/Remove steps" style="flex:2" min="1">
+                            <button class='btn secondary' id="addStepsBtn" style="flex:1">+</button>
+                            <button class='btn secondary' id="removeStepsBtn" style="flex:1">-</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Calories Burned</h3>
+                        <div class="meter">
+                            <div class="circle small" id="calCircle" style="--p:0">
+                                <div class="inner"><div><div id="calValue">0</div><small class="small muted">kcal</small></div></div>
+                            </div>
+                        </div>
+                        <div class="small muted">Goal: <span id="calGoal">2200</span> kcal</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Water Intake</h3>
+                        <div class="meter">
+                            <div class="circle small" id="waterCircle" style="--p:0">
+                                <div class="inner"><div><div id="waterValue">0</div><small class="small muted">ml</small></div></div>
+                            </div>
+                        </div>
+                        <div class="small muted">Target: <span id="waterGoal">3000</span> ml</div>
+                        <div class='form-row' style="margin-top:10px">
+                            <button class="btn secondary" id="addGlass" style="flex:2">+ Add 250ml</button>
+                            <button class="btn secondary" id="resetWater" style="flex:1">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="left">
+                        <div class="list" style="margin-bottom:12px">
+                            <h3 style="margin-bottom:8px">Quick Stats & Notes</h3>
+                            <div class="small muted">Active minutes today: <strong id="activeMin">0</strong></div>
+                            <div style="height:8px"></div>
+                            <div class="small muted">Sleep: <strong id="sleepHrs">7</strong> hrs (Simulated)</div>
+                        </div>
+
+                        <div class="list">
+                            <h3 style="margin-bottom:8px">Recent Activities</h3>
+                            <div id="recentActivities"></div>
+                        </div>
+                    </div>
+
+                    <div class="right">
+                        <div class="card">
+                            <h3>Daily Calorie Intake</h3>
+                            <div style="margin-top:12px;font-weight:800;font-size:1.6rem" id="dailyCalories">0 kcal</div>
+                            <div class="small muted" style="margin-top:8px">Total from Meal Planner</div>
+                        </div>
+
+                        <div class="card" style="margin-top:12px">
+                            <h3>Hydration Reminder</h3>
+                            <div class="small muted" style="margin-top:8px">Glass size: 250ml</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="activities" class="view" style="display:none">
+                <div class="list">
+                    <h3>Today's Activities</h3>
+                    <div class="filters" id="timeFilters">
+                        <div class="chip active" data-filter="all">All</div>
+                        <div class="chip" data-filter="morning">Morning</div>
+                        <div class="chip" data-filter="afternoon">Afternoon</div>
+                        <div class="chip" data-filter="evening">Evening</div>
+                    </div>
+
+                    <div id="activityList"></div>
+
+                    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.04);margin:12px 0">
+
+                    <h3>Add Activity</h3>
+                    <form id="addActivityForm">
+                        <div class="form-row" style="margin-bottom:10px">
+                            <input type="text" id="actName" placeholder="Activity (e.g., Running)" required>
+                            <select id="actWhen"><option value="morning">Morning</option><option value="afternoon">Afternoon</option><option value="evening">Evening</option></select>
+                        </div>
+                        <div class="form-row" style="margin-bottom:10px">
+                            <input type="number" id="actDur" placeholder="Duration (mins)" required min="1">
+                            <input type="number" id="actCal" placeholder="Calories Burned" required min="1">
+                        </div>
+                        <div style="display:flex;gap:8px">
+                            <button class="btn" type="submit">Add Activity</button>
+                            <button class="btn secondary" type="button" id="clearActivities">Clear All</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="meals" class="view" style="display:none">
+                <div class="panel">
+                    <div class="left">
+                        <div class="list">
+                            <h3>Meal Planner</h3>
+                            <div class="meals" id="mealsList"></div>
+
+                            <hr style="border:0;border-top:1px solid rgba(255,255,255,0.04);margin:12px 0">
+
+                            <h3>Add Meal Item</h3>
+                            <form id="addMealForm">
+                                <div class="form-row" style="margin-bottom:8px">
+                                    <input type="text" id="mealName" placeholder="Meal name" required>
+                                    <select id="mealSlot"><option value="breakfast">Breakfast</option><option value="lunch">Lunch</option><option value="dinner">Dinner</option></select>
+                                </div>
+                                <div class="form-row" style="margin-bottom:8px">
+                                    <input type="number" id="mealCal" placeholder="Calories" required min="1">
+                                    <input type="text" id="mealNote" placeholder="Notes (optional)">
+                                </div>
+                                <div style="display:flex;gap:8px">
+                                    <button class="btn" type="submit">Add Meal</button>
+                                    <button class="btn secondary" id="clearMealsBtn" type="button">Clear All Meals</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="right">
+                        <div class="card">
+                            <h3>Today's Calorie Breakdown</h3>
+                            <div style="margin-top:12px" id="calBreakdown">
+                                <div class="small muted">Breakfast: <strong id="brCal">0</strong> kcal</div>
+                                <div class="small muted">Lunch: <strong id="luCal">0</strong> kcal</div>
+                                <div class="small muted">Dinner: <strong id="diCal">0</strong> kcal</div>
+                                <div style="height:8px"></div>
+                                <div style="font-weight:800;font-size:1.4rem" id="totalCal">0 kcal</div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top:12px">
+                            <h3>Nutrition Tips</h3>
+                            <div class="small muted">Stay consistent. Track meals and aim for balanced macros. Hydrate regularly.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="insights" class="view" style="display:none">
+                <div class="card">
+                    <h3>Weekly Activity (Minutes)</h3>
+                    <div class="bars" id="weeklyActivities"></div>
+                    <div class="small muted" style="margin-top:10px; text-align:center;">Mon | Tue | Wed | Thu | Fri | Sat | Sun</div>
+                </div>
+
+                <div class="card" style="margin-top:12px">
+                    <h3>Weekly Calorie Intake (kcal)</h3>
+                    <div class="bars" id="weeklyCals"></div>
+                    <div class="small muted" style="margin-top:10px; text-align:center;">Mon | Tue | Wed | Thu | Fri | Sat | Sun</div>
+                </div>
+
+                <div style="margin-top:12px;display:flex;gap:10px">
+                    <button class="btn" id="simDownload">Download Summary (Sim)</button>
+                    <button class="btn secondary" id="resetLocal">Reset Session Data</button>
+                </div>
+            </section>
+
+            <section id="settings" class="view" style="display:none">
+                <div class="card">
+                    <h3>Goals & Preferences</h3>
+                    <div style="margin-top:8px" class="small muted">Unit system: Metric (kg, km)</div>
+                    <div style="height:12px"></div>
+                    <label class="small muted">Daily Step Goal</label>
+                    <input type="number" id="setStepGoal" style="margin-top:6px;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);width:160px" min="1000">
+                    <div style="height:12px"></div>
+                    <button class="btn" id="saveSettings">Save Changes</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="modal" role="dialog" aria-modal="true">
+            <h3 id="modalTitle">Modal</h3>
+            <p id="modalMessage" class="small muted"></p>
+            <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
+                <button class="btn secondary" id="modalClose">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- 1. STATIC INITIAL DATA ----------
+        const DEFAULT = {
+            steps: 4200,
+            stepsGoal: 10000,
+            caloriesBurned: 430,
+            calGoal: 500, // Goal for burned calories
+            water: 1200,
+            waterGoal: 3000,
+            activeMin: 34,
+            sleepHrs: 7,
+            activities: [
+                {id: Date.now() + 1, name:'Morning Run',when:'morning',dur:30,cal:240},
+                {id: Date.now() + 2, name:'Yoga',when:'evening',dur:40,cal:120},
+                {id: Date.now() + 3, name:'Cycling',when:'afternoon',dur:25,cal:180}
+            ],
+            meals:[
+                {id: Date.now() + 4, slot:'breakfast',name:'Oats & Fruit',cal:320},
+                {id: Date.now() + 5, slot:'lunch',name:'Grilled Chicken Salad',cal:520},
+                {id: Date.now() + 6, slot:'dinner',name:'Salmon & Veggies',cal:600}
+            ],
+            // Insights data (Simulated weekly trend)
+            weeklyActivities:[45,30,60,20,50,40,25], // minutes per day
+            weeklyCalories:[1800,2000,1750,2100,1600,2000,1900] // Total consumed kcal per day
+        };
+
+        // ---------- 2. DATA MANAGEMENT (localStorage) ----------
+        const KEY = 'ftp_data_v1';
+        
+        function loadData() {
+            const stored = localStorage.getItem(KEY);
+            if (stored) return JSON.parse(stored);
+            
+            // If no data, set default and save
+            const initialData = JSON.parse(JSON.stringify(DEFAULT)); // Deep copy
+            save(initialData);
+            return initialData;
+        }
+
+        let DATA = loadData();
+
+        function save(data = DATA) { 
+            localStorage.setItem(KEY, JSON.stringify(data)); 
+            // Re-render only when data is saved
+            renderAll(); 
+        }
+
+        // ---------- 3. UTILITIES & INIT ----------
+        
+        // Live clock
+        function updateClock(){
+            const el = document.getElementById('liveClock');
+            const d = new Date();
+            el.textContent = d.toLocaleTimeString();
+        }
+
+        // Calculate total calories consumed from meals
+        function totalMealCalories(){ 
+            return DATA.meals.reduce((s,i)=>s+i.cal,0); 
+        }
+
+        // Custom Modal
+        const overlay = document.getElementById('overlay');
+        function showModal(title, msg){ 
+            document.getElementById('modalTitle').textContent = title; 
+            document.getElementById('modalMessage').textContent = msg; 
+            overlay.style.display='flex';
+            overlay.classList.add('visible');
+        }
+        function closeModal() {
+            overlay.style.display='none';
+            overlay.classList.remove('visible');
+        }
+
+        // Helper to set the circular meter percentage
+        function setCircle(el, percent){
+            el.style.setProperty('--p', percent);
+        }
+
+        // Global render function
+        function renderAll(){ 
+            renderOverview(); 
+            // Get current active filter
+            const activeFilter = document.querySelector('.chip.active')?.dataset.filter || 'all';
+            renderActivities(activeFilter); 
+            renderMeals(); 
+            renderInsights();
+        }
+
+        // ---------- 4. PAGE 1: OVERVIEW LOGIC ----------
+
+        function renderOverview(){
+            // Steps Meter
+            document.getElementById('stepsValue').textContent = DATA.steps.toLocaleString();
+            document.getElementById('stepsGoal').textContent = DATA.stepsGoal.toLocaleString();
+            const sPerc = Math.min(100, Math.round((DATA.steps/DATA.stepsGoal)*100));
+            setCircle(document.getElementById('stepsCircle'), sPerc);
+
+            // Calories Burned Meter
+            document.getElementById('calValue').textContent = DATA.caloriesBurned.toLocaleString();
+            document.getElementById('calGoal').textContent = DATA.calGoal.toLocaleString();
+            const cPerc = Math.min(100, Math.round((DATA.caloriesBurned/DATA.calGoal)*100));
+            setCircle(document.getElementById('calCircle'), cPerc);
+
+            // Water Intake Meter
+            document.getElementById('waterValue').textContent = DATA.water.toLocaleString();
+            document.getElementById('waterGoal').textContent = DATA.waterGoal.toLocaleString();
+            const wPerc = Math.min(100, Math.round((DATA.water/DATA.waterGoal)*100));
+            setCircle(document.getElementById('waterCircle'), wPerc);
+
+            document.getElementById('activeMin').textContent = DATA.activeMin;
+            document.getElementById('sleepHrs').textContent = DATA.sleepHrs;
+            document.getElementById('dailyCalories').textContent = totalMealCalories().toLocaleString() + ' kcal';
+
+            // Recent Activities (Show last 4)
+            const recent = document.getElementById('recentActivities'); recent.innerHTML='';
+            DATA.activities.slice().reverse().slice(0,4).forEach(a=>{
+                const div = document.createElement('div'); div.className='item';
+                div.innerHTML = `<div><strong>${a.name}</strong><div class="small muted">${a.dur} min • ${a.cal} kcal</div></div><div class="small muted">${a.when.charAt(0).toUpperCase()+a.when.slice(1)}</div>`;
+                recent.appendChild(div);
+            });
+        }
+        
+        function updateSteps(amount){
+            const calUpdate = amount > 0 ? Math.round(amount * 0.04) : Math.round(amount * 0.04); // Simulated calorie burn (40 steps per kcal)
+            
+            DATA.steps += amount;
+            DATA.caloriesBurned += calUpdate;
+
+            if(DATA.steps < 0) DATA.steps = 0;
+            if(DATA.caloriesBurned < 0) DATA.caloriesBurned = 0;
+            save();
+        }
+
+        // Event Listeners for Overview controls
+        document.getElementById('addStepsBtn').addEventListener('click',()=>{ 
+            const input = document.getElementById('stepInput');
+            const amount = parseInt(input.value, 10);
+            if(amount > 0){
+                updateSteps(amount);
+                input.value = '';
+                showModal('Steps Added','Added ' + amount.toLocaleString() + ' steps.');
+            } else {
+                showModal('Error','Please enter a positive number of steps to add.');
+            }
+        });
+
+        document.getElementById('removeStepsBtn').addEventListener('click',()=>{ 
+            const input = document.getElementById('stepInput');
+            const amount = parseInt(input.value, 10);
+            if(amount > 0){
+                updateSteps(-amount);
+                input.value = '';
+                showModal('Steps Removed','Removed ' + amount.toLocaleString() + ' steps.');
+            } else {
+                showModal('Error','Please enter a positive number of steps to remove.');
+            }
+        });
+
+        document.getElementById('addGlass').addEventListener('click',()=>{ 
+            const amount = 250;
+            DATA.water += amount; 
+            DATA.water = Math.min(DATA.water, DATA.waterGoal); // Cap at goal for visual max
+            save(); 
+            showModal('Hydration','Drank 250ml of water!');
+        });
+        document.getElementById('resetWater').addEventListener('click',()=>{ 
+            DATA.water = 0; 
+            save(); 
+            showModal('Water Reset','Water intake reset for the day.');
+        });
+
+        // ---------- 5. PAGE 2: ACTIVITY LOGIC ----------
+        
+        function renderActivities(filter='all'){
+            const list = document.getElementById('activityList'); list.innerHTML='';
+            
+            // Filter list in reverse order for newest first
+            const filteredActivities = DATA.activities.slice().reverse().filter(a => filter === 'all' || a.when === filter);
+
+            if (filteredActivities.length === 0) {
+                list.innerHTML = `<div class="small muted" style="padding:15px; text-align:center;">No activities logged for ${filter === 'all' ? 'today' : filter}.</div>`;
+                return;
+            }
+
+            filteredActivities.forEach(a=>{
+                const item = document.createElement('div'); 
+                item.className='item';
+                item.dataset.id = a.id;
+                item.innerHTML = `<div><strong>${a.name}</strong><div class="small muted">${a.dur} min • ${a.when}</div></div>
+                                 <div style="text-align:right"><div class="small muted">${a.cal} kcal</div>
+                                 <div style="margin-top:6px"><button class="btn secondary" data-id="${a.id}">Delete</button></div></div>`;
+                list.appendChild(item);
+            });
+        }
+
+        document.getElementById('addActivityForm').addEventListener('submit',e=>{
+            e.preventDefault();
+            
+            const name = document.getElementById('actName').value.trim();
+            const when = document.getElementById('actWhen').value;
+            const dur = parseInt(document.getElementById('actDur').value,10);
+            const cal = parseInt(document.getElementById('actCal').value,10);
+
+            if(!name || dur <= 0 || cal <= 0){ 
+                showModal('Validation','Please provide valid activity, positive duration, and calories.'); 
+                return; 
+            }
+
+            const newActivity = {
+                id: Date.now(),
+                name,
+                when,
+                dur,
+                cal
+            };
+
+            DATA.activities.push(newActivity); 
+            DATA.caloriesBurned += cal; // Update dashboard total
+            DATA.activeMin += dur; // Update active minutes
+            save(); 
+
+            showModal('Activity Added', `Successfully logged ${name} (${cal} kcal).`);
+            e.target.reset();
+        });
+
+        // Delegated delete for activities
+        document.getElementById('activityList').addEventListener('click',e=>{
+            if(e.target.matches('button')){
+                const id = parseInt(e.target.dataset.id, 10);
+                const index = DATA.activities.findIndex(a => a.id === id);
+                
+                if(index >= 0){
+                    const activity = DATA.activities[index];
+                    DATA.caloriesBurned -= activity.cal;
+                    DATA.activeMin -= activity.dur;
+                    DATA.activities.splice(index, 1);
+                    save(); 
+                    showModal('Activity Deleted', `${activity.name} removed.`);
+                }
+            }
+        });
+
+        // Filters
+        document.getElementById('timeFilters').addEventListener('click',e=>{
+            if(e.target.classList.contains('chip')){
+                document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+                e.target.classList.add('active'); 
+                renderActivities(e.target.dataset.filter);
+            }
+        });
+        
+        document.getElementById('clearActivities').addEventListener('click', ()=>{ 
+            if(confirm('Clear all activities and reset Calorie Burned and Active Minutes?')){ 
+                DATA.activities=[]; 
+                DATA.caloriesBurned = 0;
+                DATA.activeMin = 0;
+                save(); 
+                showModal('Cleared','All activities have been cleared.');
+            }
+        });
+
+        // ---------- 6. PAGE 3: MEAL PLANNER LOGIC ----------
+
+        function renderMeals(){
+            const container = document.getElementById('mealsList'); container.innerHTML='';
+            
+            // Calculate totals for breakdown
+            const totals = {
+                breakfast: 0, lunch: 0, dinner: 0, total: 0
+            };
+            
+            ['breakfast','lunch','dinner'].forEach(slot=>{
+                const tile = document.createElement('div'); tile.className='meal';
+                const items = DATA.meals.filter(m=>m.slot===slot);
+                const name = items.map(i=>i.name+' ('+i.cal+'kcal)').join(', ') || '—';
+                const total = items.reduce((s,i)=>s+i.cal,0);
+                totals[slot] = total;
+                totals.total += total;
+
+                tile.innerHTML = `<div><div class='meta'>${slot.charAt(0).toUpperCase()+slot.slice(1)}</div><small class='muted'>${name}</small></div>
+                                 <div style='text-align:right'><div class='small muted'>${total} kcal</div>
+                                 <div style='margin-top:8px'><button class='btn secondary' data-slot='${slot}'>Remove Last</button></div></div>`;
+                container.appendChild(tile);
+            });
+
+            // Update Breakdown Panel
+            document.getElementById('brCal').textContent = totals.breakfast.toLocaleString();
+            document.getElementById('luCal').textContent = totals.lunch.toLocaleString();
+            document.getElementById('diCal').textContent = totals.dinner.toLocaleString();
+            document.getElementById('totalCal').textContent = totals.total.toLocaleString() + ' kcal';
+            document.getElementById('dailyCalories').textContent = totals.total.toLocaleString() + ' kcal';
+        }
+
+        document.getElementById('addMealForm').addEventListener('submit',e=>{
+            e.preventDefault();
+            
+            const name = document.getElementById('mealName').value.trim();
+            const slot = document.getElementById('mealSlot').value;
+            const cal = parseInt(document.getElementById('mealCal').value,10);
+
+            if(!name || cal <= 0){ 
+                showModal('Validation','Please provide a meal name and positive calories.'); 
+                return; 
+            }
+            DATA.meals.push({id: Date.now(), slot, name, cal}); 
+            save(); 
+            showModal('Meal Added','Meal added successfully.'); 
+            e.target.reset();
+        });
+
+        // Remove meal by slot (removes last added in that slot)
+        document.getElementById('mealsList').addEventListener('click',e=>{
+            if(e.target.matches('button')){
+                const slot = e.target.dataset.slot;
+                if(slot){ 
+                    const idx = DATA.meals.map(m=>m.slot).lastIndexOf(slot); 
+                    if(idx>=0) DATA.meals.splice(idx,1); 
+                    save(); 
+                    showModal('Meal Removed', `Last meal item from ${slot} removed.`);
+                }
+            }
+        });
+
+        document.getElementById('clearMealsBtn').addEventListener('click',()=>{ 
+            if(confirm('Clear all meals for today?')){ 
+                DATA.meals=[]; 
+                save(); 
+                showModal('Cleared','All meals have been cleared.');
+            }
+        });
+
+        // ---------- 7. PAGE 4: INSIGHTS LOGIC ----------
+        
+        function renderInsights(){
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+            // Weekly Activities Graph
+            const wa = document.getElementById('weeklyActivities'); wa.innerHTML='';
+            const maxA = Math.max(...DATA.weeklyActivities, 10);
+            DATA.weeklyActivities.forEach((v, i)=>{ 
+                const bar = document.createElement('div'); 
+                bar.className='bar'; 
+                bar.style.height = Math.max(8, Math.round((v/maxA)*100)) + '%'; 
+                bar.textContent = v; 
+                bar.title = `${days[i]}: ${v} min`;
+                wa.appendChild(bar); 
+            });
+
+            // Weekly Calories Graph
+            const wc = document.getElementById('weeklyCals'); wc.innerHTML='';
+            const maxC = Math.max(...DATA.weeklyCalories, 1000);
+            DATA.weeklyCalories.forEach((v, i)=>{ 
+                const bar = document.createElement('div'); 
+                bar.className='bar'; 
+                bar.style.height = Math.max(8, Math.round((v/maxC)*100)) + '%'; 
+                bar.textContent = Math.round(v/100)/10 + 'k'; // Display in thousands
+                bar.title = `${days[i]}: ${v} kcal`;
+                wc.appendChild(bar); 
+            });
+        }
+
+        // ---------- 8. GENERAL CONTROLS & LISTENERS ----------
+
+        // Navigation
+        document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',e=>{
+            document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            const view = btn.dataset.view;
+            document.querySelectorAll('.view').forEach(v=>v.style.display = v.id===view? 'block':'none');
+            // Re-render to ensure graph animations fire when switching to Insights
+            if(view === 'insights') renderInsights();
+            if(view === 'settings') document.getElementById('setStepGoal').value = DATA.stepsGoal;
+        }));
+
+        // Reset Dashboard (Full reset to defaults)
+        document.getElementById('resetBtn').addEventListener('click', ()=>{ 
+            if(confirm('Are you sure you want to reset ALL dashboard data to the initial defaults? This action cannot be undone.')){ 
+                localStorage.removeItem(KEY); 
+                DATA = JSON.parse(JSON.stringify(DEFAULT)); // Reset to deep copy of default
+                save(); 
+                showModal('Reset Complete','Dashboard data has been reset to defaults.');
+            }
+        });
+
+        // Reset Session Data (Insights page)
+        document.getElementById('resetLocal').addEventListener('click', ()=>{ 
+            if(confirm('Reset only the current session data (Steps, Water, Activities, Meals) to defaults? Weekly Insights data remains.')){ 
+                DATA = { ...DATA, ...JSON.parse(JSON.stringify(DEFAULT))}; // Merge only resettable properties
+                // Prevent resetting weekly insights, only reset daily metrics
+                DATA.steps = DEFAULT.steps;
+                DATA.caloriesBurned = DEFAULT.caloriesBurned;
+                DATA.water = DEFAULT.water;
+                DATA.activities = DEFAULT.activities;
+                DATA.meals = DEFAULT.meals;
+                DATA.activeMin = DEFAULT.activeMin;
+
+                save(); 
+                showModal('Session Reset','Daily metrics have been reset.');
+            }
+        });
+
+        // Settings save
+        document.getElementById('saveSettings').addEventListener('click', ()=>{
+            const v = parseInt(document.getElementById('setStepGoal').value,10);
+            if(v && v>0){ 
+                DATA.stepsGoal = v; 
+                save(); 
+                showModal('Saved','Step goal updated to ' + v.toLocaleString() + ' steps.'); 
+            }
+            else showModal('Validation','Please provide a valid positive step goal.');
+        });
+
+        // Download summary - simulated
+        document.getElementById('downloadSummary').addEventListener('click', downloadSummary);
+        document.getElementById('simDownload').addEventListener('click', downloadSummary);
+        function downloadSummary(){
+            const summary = {
+                date: new Date().toISOString(), 
+                overview:{steps:DATA.steps,caloriesBurned:DATA.caloriesBurned,water:DATA.water, dailyCalorieIntake: totalMealCalories()}, 
+                activities:DATA.activities, 
+                meals:DATA.meals
+            };
+            const blob = new Blob([JSON.stringify(summary,null,2)],{type:'application/json'});
+            const url = URL.createObjectURL(blob); 
+            const a = document.createElement('a'); 
+            a.href=url; 
+            a.download='fittrack_summary_'+new Date().toISOString().slice(0,10)+'.json'; 
+            a.click(); 
+            URL.revokeObjectURL(url);
+            showModal('Download Simulated','Summary JSON file has been created and downloaded.');
+        }
+
+        // Modal Close Listeners
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
+
+
+        // --- INITIAL EXECUTION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setInterval(updateClock, 1000); 
+            updateClock();
+            
+            // Set initial settings value
+            document.getElementById('setStepGoal').value = DATA.stepsGoal;
+            
+            // Initial render
+            renderAll();
+        });
+
+        // Save on window unload
+        window.addEventListener('beforeunload', save);
+    </script>
+</body>
+</html>
